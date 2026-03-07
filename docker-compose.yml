@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  cnc-backend:
+    build: ./backend
+    container_name: cnc-backend
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./backend/data:/app/data
+    devices:
+      # Décommenter et adapter pour accès ports série réels
+      # - /dev/ttyUSB0:/dev/ttyUSB0
+      # - /dev/ttyACM0:/dev/ttyACM0
+      []
+
+  cnc-frontend:
+    build: ./frontend
+    container_name: cnc-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - cnc-backend
