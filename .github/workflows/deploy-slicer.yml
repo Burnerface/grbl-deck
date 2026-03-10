@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - 'slicer-app/**'
       - 'slicer/**'
       - 'docker-compose.yml'
   workflow_dispatch:
@@ -16,13 +17,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build et restart
-        run: |
-          cd /data/compose/33
-          docker compose build slicer
-          docker compose up -d slicer
+      - name: Install deps
+        run: cd $GITHUB_WORKSPACE/slicer-app && npm ci
+
+      - name: Build Vue
+        run: cd $GITHUB_WORKSPACE/slicer-app && npm run build
+
+      - name: Copier dist
+        run: cp -r $GITHUB_WORKSPACE/slicer-app/dist/* /data/compose/33/slicer/dist/
+
+      - name: Rebuild & restart
+        run: cd /data/compose/33 && docker compose build slicer && docker compose up -d slicer
 
       - name: Health check
-        run: |
-          sleep 5
-          curl -sf http://localhost:5174/health && echo "Slicer OK"
+        run: sleep 5 && curl -sf http://localhost:5174 && echo "✅ OK"
